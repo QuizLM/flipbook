@@ -1,4 +1,7 @@
+
 import { dom } from './dom.js';
+import { state } from './state.js';
+import { getFlipbookInstance } from './flipbook.js';
 
 export function showLoader() {
     dom.appContainer.classList.add('flipbook-active');
@@ -70,4 +73,53 @@ export function switchTab(mode) {
     // Update view visibility
     dom.fileUploadView.classList.toggle('hidden', !isFileMode);
     dom.textPasteView.classList.toggle('hidden', isFileMode);
+}
+
+
+export function addSparkleEffect(button) {
+    button.addEventListener('mousemove', (e) => {
+        const rect = button.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        button.style.setProperty('--x', `${x}px`);
+        button.style.setProperty('--y', `${y}px`);
+    });
+}
+
+export function updateGenerateButtonState() {
+    dom.generateBtn.disabled = !state.currentContentSource.value;
+}
+
+export function handleTabKeydown(e) {
+    const tabs = [dom.fileTabBtn, dom.textTabBtn];
+    const activeIndex = tabs.findIndex(tab => tab === document.activeElement);
+    if (activeIndex === -1) return;
+    let newIndex = -1;
+    if (e.key === 'ArrowRight') newIndex = (activeIndex + 1) % tabs.length;
+    else if (e.key === 'ArrowLeft') newIndex = (activeIndex - 1 + tabs.length) % tabs.length;
+    if (newIndex !== -1) {
+        e.preventDefault();
+        const newTab = tabs[newIndex];
+        switchTab(newTab.dataset.mode);
+        newTab.focus();
+    }
+}
+
+export function toggleFullScreen() {
+    if (!document.fullscreenElement) {
+        dom.appContainer.requestFullscreen().catch(err => {
+            alert(`Full-screen mode could not be activated: ${err.message}`);
+        });
+    } else {
+        document.exitFullscreen();
+    }
+}
+
+export function handleFullScreenChange() {
+    const isFullScreen = !!document.fullscreenElement;
+    document.body.classList.toggle('fullscreen-active', isFullScreen);
+    dom.enterFullscreenIcon.classList.toggle('hidden', isFullScreen);
+    dom.exitFullscreenIcon.classList.toggle('hidden', !isFullScreen);
+    dom.fullscreenBtn.setAttribute('aria-label', isFullScreen ? 'Exit Full Screen' : 'Enter Full Screen');
+    setTimeout(() => getFlipbookInstance()?.update(), 150);
 }

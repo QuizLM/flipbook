@@ -1,10 +1,11 @@
+
 import { dom } from './dom.js';
 import { showError, showFlipbook } from './ui.js';
 import { generateAndPlayAudio, stopAllAudio } from './tts.js';
 
 const PageFlip = window.St.PageFlip;
 let pageFlipInstance = null;
-const MAX_CONTENT_HEIGHT = 450; 
+const MAX_CONTENT_HEIGHT = 420; 
 let searchablePageCache = [];
 
 export function getFlipbookInstance() {
