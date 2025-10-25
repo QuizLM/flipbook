@@ -6,7 +6,7 @@ import { generateAndPlayAudio, stopAllAudio } from './tts.js';
 
 const PageFlip = window.St.PageFlip;
 let pageFlipInstance = null;
-const MAX_CONTENT_HEIGHT = 420; 
+const MAX_CONTENT_HEIGHT = 400; // More conservative to prevent overflow. Was 420.
 let searchablePageCache = [];
 
 export function getFlipbookInstance() {
@@ -43,7 +43,10 @@ export function paginateHtmlContent(fullHtml, theme = 'default') {
 
     const measurer = document.createElement('div');
     Object.assign(measurer.style, {
-        width: '336px', // Corresponds to the base width of the flipbook page
+        // FIX: Correctly calculate the width based on the flipbook size and padding.
+        // Flipbook width is 400px, padding is 1.5rem (24px) left and right.
+        // Content width = 400 - (2 * 24) = 352px.
+        width: '352px',
         height: 'auto',
     });
     measurer.className = 'page-content prose';
