@@ -1,0 +1,5 @@
+{
+  "name": "Interactive Flipbook Creator",
+  "description": "A simple and powerful application to convert documents (PDF, TXT, MD) or pasted text into a beautiful, interactive digital flipbook. Built with HTML, CSS, and JavaScript.",
+  "requestFramePermissions": []
+}
