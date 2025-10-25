@@ -1,3 +1,4 @@
+
 import { dom } from './js/dom.js';
 import { showLoader, showError, showFlipbook, updateLoaderProgress, resetView, switchTab } from './js/ui.js';
 import { processFile } from './js/content.js';
@@ -23,8 +24,10 @@ async function handleGenerate() {
         const coverImageInput = dom.coverImageInput.files?.[0];
         const coverImageBase64 = coverImageInput ? await fileToBase64(coverImageInput) : null;
 
+        const theme = document.querySelector('.theme-btn.active')?.dataset.theme || 'default';
+
         const options = {
-            theme: document.querySelector('.theme-btn.active')?.dataset.theme || 'default',
+            theme: theme,
             narration: dom.narrationToggle.checked,
             cover: {
                 title: dom.coverTitle.value,
@@ -56,7 +59,11 @@ async function handleGenerate() {
             pages = content;
         } else if (typeof content === 'string') {
             const fullHtml = marked.parse(content, { breaks: true });
-            pages = paginateHtmlContent(fullHtml);
+
+            // Wait for fonts to be loaded and ready to prevent text overflow issues
+            await document.fonts.ready;
+            
+            pages = paginateHtmlContent(fullHtml, theme);
         } else {
             throw new Error('Unsupported content type for flipbook generation.');
         }

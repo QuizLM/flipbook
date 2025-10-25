@@ -1,4 +1,5 @@
 
+
 import { dom } from './dom.js';
 import { showError, showFlipbook } from './ui.js';
 import { generateAndPlayAudio, stopAllAudio } from './tts.js';
@@ -25,22 +26,34 @@ export function getSearchablePages(pages, isImageBook) {
     return searchablePageCache;
 }
 
-export function paginateHtmlContent(fullHtml) {
+export function paginateHtmlContent(fullHtml, theme = 'default') {
     const sourceContainer = document.createElement('div');
     sourceContainer.innerHTML = fullHtml;
     const nodes = Array.from(sourceContainer.childNodes);
 
+    // Create a temporary wrapper with the correct theme class for accurate measurement
+    const wrapper = document.createElement('div');
+    // We add the theme class directly to the wrapper to simulate the final render environment
+    wrapper.className = `theme-${theme}`;
+    Object.assign(wrapper.style, {
+        position: 'absolute',
+        left: '-9999px',
+        visibility: 'hidden',
+    });
+
     const measurer = document.createElement('div');
     Object.assign(measurer.style, {
-        position: 'absolute', left: '-9999px', visibility: 'hidden',
-        width: '336px', height: 'auto',
+        width: '336px', // Corresponds to the base width of the flipbook page
+        height: 'auto',
     });
     measurer.className = 'page-content prose';
-    document.body.appendChild(measurer);
+    
+    wrapper.appendChild(measurer);
+    document.body.appendChild(wrapper);
 
     const pages = [];
     if (nodes.length === 0) {
-        document.body.removeChild(measurer);
+        document.body.removeChild(wrapper); // Clean up
         return [];
     }
 
@@ -55,8 +68,9 @@ export function paginateHtmlContent(fullHtml) {
             }
             measurer.innerHTML = '';
             measurer.appendChild(clonedNode);
+            // Re-check in case a single element is too large for a page
             if (measurer.scrollHeight > MAX_CONTENT_HEIGHT) {
-                pages.push(measurer.innerHTML);
+                pages.push(measurer.innerHTML); // Add it anyway to not lose content
                 measurer.innerHTML = '';
             }
         }
@@ -66,7 +80,7 @@ export function paginateHtmlContent(fullHtml) {
         pages.push(measurer.innerHTML);
     }
 
-    document.body.removeChild(measurer);
+    document.body.removeChild(wrapper); // Clean up the wrapper and measurer
     return pages;
 }
 

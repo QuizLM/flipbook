@@ -1,3 +1,4 @@
+
 import { GoogleGenAI } from "@google/genai";
 import { dom } from './js/dom.js';
 import { showLoader, showError, showFlipbook, updateLoaderProgress, resetView, switchTab } from './js/ui.js';
@@ -28,9 +29,10 @@ async function handleGenerate() {
         const coverImageInput = (dom.coverImageInput as HTMLInputElement).files?.[0];
         const coverImageBase64 = coverImageInput ? await fileToBase64(coverImageInput) : null;
 
+        const theme = (document.querySelector('.theme-btn.active') as HTMLElement)?.dataset.theme || 'default';
+
         const options = {
-            // FIX: Cast querySelector result to HTMLElement to access 'dataset' property.
-            theme: (document.querySelector('.theme-btn.active') as HTMLElement)?.dataset.theme || 'default',
+            theme: theme,
             // FIX: Cast dom.narrationToggle to HTMLInputElement to access 'checked' property.
             narration: (dom.narrationToggle as HTMLInputElement).checked,
             cover: {
@@ -65,7 +67,11 @@ async function handleGenerate() {
             pages = content;
         } else if (typeof content === 'string') {
             const fullHtml = marked.parse(content, { breaks: true });
-            pages = paginateHtmlContent(fullHtml);
+            
+            // Wait for fonts to be loaded and ready to prevent text overflow issues
+            await document.fonts.ready;
+
+            pages = paginateHtmlContent(fullHtml, theme);
         } else {
             throw new Error('Unsupported content type for flipbook generation.');
         }
