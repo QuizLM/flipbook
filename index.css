@@ -55,6 +55,10 @@ body {
     100% { background-position: 0% 50%; }
 }
 
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
 
 .app-container {
     display: flex;
@@ -76,16 +80,15 @@ body {
     box-shadow: var(--shadow);
     overflow-y: auto;
     transition: transform 0.5s ease-in-out, opacity 0.3s ease-in-out, max-height 0.5s ease-in-out, padding 0.5s ease-in-out;
-    max-height: 100vh; /* Set initial max-height for transition */
+    max-height: 100vh;
 }
 
-/* Mobile-first rule to hide the panel */
 .app-container.flipbook-active .input-panel {
     max-height: 0;
     opacity: 0;
     padding-top: 0;
     padding-bottom: 0;
-    overflow: hidden; /* Prevent content from spilling during transition */
+    overflow: hidden;
 }
 
 
@@ -93,16 +96,13 @@ body {
     .input-panel {
         width: 33.33%;
         max-width: 400px;
-        max-height: none; /* Override mobile setting */
+        max-height: none;
     }
     .app-container.flipbook-active .input-panel {
-        /* Override mobile hide effect */
         max-height: none;
         padding-top: 1.5rem;
         padding-bottom: 1.5rem;
         overflow-y: auto;
-        
-        /* Apply desktop hide effect */
         transform: translateX(-100%);
         opacity: 0;
     }
@@ -151,7 +151,6 @@ body {
     }
 }
 
-
 .input-header p {
     color: var(--color-text-secondary);
     margin-top: 0.25rem;
@@ -159,7 +158,7 @@ body {
 
 .header-divider {
     height: 1px;
-    width: 60%;
+    width: 80%;
     margin: 1.5rem auto;
     background: linear-gradient(to right, transparent, var(--color-border), transparent);
 }
@@ -202,13 +201,11 @@ body {
 }
 
 .input-area {
-    flex-grow: 1;
     margin-top: 1.5rem;
 }
 #text-paste-view {
     display: flex;
     flex-direction: column;
-    height: 100%;
 }
 
 .dropzone {
@@ -217,7 +214,7 @@ body {
     align-items: center;
     justify-content: center;
     width: 100%;
-    height: 16rem;
+    height: 12rem;
     border: 2px dashed var(--color-border);
     border-radius: 0.5rem;
     cursor: pointer;
@@ -246,13 +243,13 @@ body {
 }
 .file-name-display {
     color: var(--color-primary);
-    margin-top: 1rem;
+    margin-top: 0.5rem;
     font-size: 0.75rem;
+    font-style: italic;
 }
 
 #text-input {
     width: 100%;
-    flex-grow: 1;
     padding: 1rem;
     border: 1px solid var(--color-border);
     border-radius: 0.5rem;
@@ -260,7 +257,7 @@ body {
     background-color: var(--color-surface);
     color: var(--color-text);
     font-size: 1rem;
-    min-height: 200px;
+    min-height: 12rem;
 }
 #text-input:focus {
     outline: none;
@@ -268,8 +265,135 @@ body {
     box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.5);
 }
 
+/* --- Customization Area --- */
+.customization-area {
+    margin-bottom: 1.5rem;
+}
+.section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--color-text);
+}
+.setting-group {
+    margin-bottom: 1.5rem;
+}
+.setting-group > label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    margin-bottom: 0.5rem;
+}
+.theme-selector {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+}
+.theme-btn {
+    padding: 0.5rem;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s ease-in-out;
+    border: 1px solid var(--color-border);
+    background-color: var(--color-bg);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+}
+.theme-btn:hover {
+    background-color: var(--color-bg-secondary);
+}
+.theme-btn.active {
+    background-color: var(--color-primary);
+    color: white;
+    border-color: var(--color-primary);
+    box-shadow: var(--shadow);
+}
+.accordion summary {
+    font-weight: 500;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 0.375rem;
+    background-color: var(--color-bg);
+    transition: background-color 0.2s;
+}
+.accordion summary:hover {
+    background-color: var(--color-bg-secondary);
+}
+.accordion-content {
+    padding: 1rem 0.5rem 0.5rem;
+    border-top: 1px solid var(--color-border);
+    margin-top: 0.5rem;
+}
+.accordion-content label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    margin-bottom: 0.25rem;
+}
+.accordion-content input[type="text"] {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.375rem;
+    margin-bottom: 0.75rem;
+    background-color: var(--color-surface);
+    color: var(--color-text);
+}
+.accordion-content input[type="file"] {
+    display: none;
+}
+.file-input-label {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background-color: var(--color-bg-secondary);
+    color: var(--color-text);
+    border-radius: 0.375rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.file-input-label:hover {
+    background-color: var(--color-border);
+}
+
+.toggle-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    font-weight: 500;
+}
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+}
+.toggle-switch input { display: none; }
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: var(--color-bg-secondary);
+    transition: .4s;
+    border-radius: 34px;
+}
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 16px; width: 16px;
+    left: 4px; bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+input:checked + .slider { background-color: var(--color-primary); }
+input:checked + .slider:before { transform: translateX(20px); }
+
 .submit-btn {
-    margin-top: 1rem;
+    margin-top: auto; /* Push to bottom */
     width: 100%;
     background-color: var(--color-primary);
     color: white;
@@ -279,8 +403,8 @@ body {
     border-radius: 0.5rem;
     cursor: pointer;
     transition: all 0.2s ease-in-out;
-    position: relative; /* For sparkle effect */
-    overflow: hidden; /* For sparkle effect */
+    position: relative;
+    overflow: hidden;
 }
 .submit-btn:disabled {
     background-color: var(--color-bg-secondary);
@@ -352,9 +476,14 @@ body {
     max-width: 800px;
     height: auto;
     aspect-ratio: 800 / 550;
+    --page-bg-color: #e6f7ff;
+    --page-text-color: #1f2937;
+    --page-font: "Times New Roman", Times, serif;
 }
+
 .page {
-    background-color: #e6f7ff;
+    background-color: var(--page-bg-color);
+    color: var(--page-text-color);
     box-shadow: 0 0 20px rgba(0,0,0,0.2);
     display: flex;
     justify-content: center;
@@ -367,7 +496,7 @@ body {
     padding: 2rem;
     overflow: hidden;
     position: relative;
-    font-family: "Times New Roman", Times, serif;
+    font-family: var(--page-font);
     font-size: 16px;
     line-height: 1.6;
     text-align: left;
@@ -384,15 +513,19 @@ body {
     bottom: 1rem;
     right: 1.5rem;
     font-size: 0.875rem;
-    color: #9ca3af;
+    color: var(--color-text-secondary);
 }
 
 /* Dark mode page styles */
 @media (prefers-color-scheme: dark) {
-    .page {
-        background-color: #1e3a5f;
-        color: var(--color-text);
+    #flipbook {
+        --page-bg-color: #1e3a5f;
+        --page-text-color: var(--color-text);
     }
+}
+.prose a {
+    color: var(--color-primary);
+    text-decoration: underline;
 }
 
 /* Prose-like styles for content */
@@ -404,6 +537,80 @@ body {
 .prose em { font-style: italic; }
 .prose blockquote { border-left: 4px solid var(--color-border); padding-left: 1em; margin-left: 0; font-style: italic; color: var(--color-text-secondary); }
 
+/* --- THEMES --- */
+#flipbook-wrapper.theme-classic {
+    --page-bg-color: #fdfaf2;
+    --page-text-color: #3a2a1a;
+    --page-font: 'Playfair Display', serif;
+}
+#flipbook-wrapper.theme-classic .page {
+    background-image: url('https://www.transparenttextures.com/patterns/light-paper-fibers.png');
+}
+#flipbook-wrapper.theme-modern {
+    --page-bg-color: #ffffff;
+    --page-text-color: #111827;
+    --page-font: 'Roboto', sans-serif;
+}
+#flipbook-wrapper.theme-kids {
+    --page-bg-color: #f0f9ff;
+    --page-text-color: #1e40af;
+    --page-font: 'Baloo 2', cursive;
+}
+@media (prefers-color-scheme: dark) {
+    #flipbook-wrapper.theme-classic { --page-bg-color: #28211a; --page-text-color: #e0d9ce; }
+    #flipbook-wrapper.theme-modern { --page-bg-color: #1f2937; --page-text-color: #e5e7eb; }
+    #flipbook-wrapper.theme-kids { --page-bg-color: #1e293b; --page-text-color: #93c5fd; }
+}
+
+/* Cover Page Styles */
+.cover-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 2rem;
+    height: 100%;
+}
+.cover-image {
+    max-width: 80%;
+    max-height: 50%;
+    object-fit: contain;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+.cover-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+.cover-author {
+    font-size: 1rem;
+    font-style: italic;
+    color: var(--color-text-secondary);
+}
+
+/* Narration Button */
+.narration-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1.5rem;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    border: none;
+    background-color: rgba(0,0,0,0.1);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s;
+}
+.narration-btn:hover { background-color: rgba(0,0,0,0.2); }
+.narration-btn svg { width: 1.5rem; height: 1.5rem; color: var(--page-text-color); }
+.narration-btn .loading-icon { animation: spin 1s linear infinite; }
+
 
 #flipbook-controls {
     display: flex;
@@ -411,6 +618,7 @@ body {
     justify-content: center;
     margin-top: 1.5rem;
     gap: 1rem;
+    flex-wrap: wrap;
 }
 .control-btn {
     display: flex;
@@ -556,4 +764,96 @@ body {
     height: 6rem;
     margin: 0 auto 1rem;
     opacity: 0.5;
+}
+
+/* --- Search --- */
+.search-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+#search-input {
+    border: 1px solid var(--color-border);
+    border-radius: 9999px;
+    padding: 0.4rem 0.8rem;
+    width: 120px;
+    transition: width 0.3s;
+}
+#search-input:focus {
+    width: 150px;
+    outline: none;
+    border-color: var(--color-primary);
+}
+#search-btn {
+    margin-left: -2.5rem; /* Overlap input */
+    background-color: transparent;
+    box-shadow: none;
+}
+.search-results {
+    position: absolute;
+    bottom: 110%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 0.5rem;
+    box-shadow: var(--shadow);
+    padding: 0.5rem;
+    max-height: 150px;
+    overflow-y: auto;
+    z-index: 20;
+    width: 150px;
+}
+.search-results p {
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+    padding: 0.25rem;
+}
+.search-result-item {
+    padding: 0.25rem 0.5rem;
+    cursor: pointer;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+}
+.search-result-item:hover {
+    background-color: var(--color-bg-secondary);
+}
+
+
+/* --- FULL SCREEN STYLES --- */
+#fullscreen-btn svg {
+    width: 1.5rem;
+    height: 1.5rem;
+}
+
+body.fullscreen-active .floating-btn {
+    display: none;
+}
+
+body.fullscreen-active .flipbook-container {
+    padding: 0;
+    width: 100vw;
+    height: 100vh;
+}
+
+body.fullscreen-active #flipbook-controls {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 20;
+    background-color: rgba(31, 41, 55, 0.6); /* --color-bg-secondary dark with opacity */
+    padding: 0.5rem 1rem;
+    border-radius: 9999px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px); /* For Safari */
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+@media (prefers-color-scheme: light) {
+    body.fullscreen-active #flipbook-controls {
+        background-color: rgba(255, 255, 255, 0.6);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+    }
 }

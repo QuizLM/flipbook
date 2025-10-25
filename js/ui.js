@@ -41,8 +41,17 @@ export function resetView() {
     dom.flipbookWrapper.classList.add('hidden');
     dom.errorDisplay.classList.add('hidden');
     dom.loader.classList.add('hidden');
-    dom.textInput.value = ''; // Clear text input
-    dom.createFromTextBtn.disabled = true;
+    
+    // Clear all inputs
+    dom.textInput.value = '';
+    dom.fileNameDisplay.textContent = '';
+    dom.coverTitle.value = '';
+    dom.coverAuthor.value = '';
+    dom.coverImageInput.value = '';
+    dom.coverImageName.textContent = '';
+    dom.narrationToggle.checked = false;
+
+    dom.generateBtn.disabled = true;
 
     // Return focus to the first tab for accessibility
     dom.fileTabBtn.focus();

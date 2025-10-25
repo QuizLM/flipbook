@@ -7,7 +7,7 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@400;700&family=Baloo+2:wght@400;700&display=swap" rel="stylesheet">
     <!-- StPageFlip Library -->
     <script src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.min.js"></script>
     <!-- PDF.js Library -->
@@ -21,6 +21,13 @@
       }
     </script>
     <link rel="stylesheet" href="index.css">
+<script type="importmap">
+{
+  "imports": {
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.27.0"
+  }
+}
+</script>
 </head>
 <body>
     <div id="app-container" class="app-container">
@@ -61,11 +68,53 @@
                     <div id="text-paste-view" class="hidden" role="tabpanel" aria-labelledby="text-tab-btn">
                         <label for="text-input" class="hidden">Paste text content</label>
                         <textarea id="text-input" placeholder="Paste your content here..." aria-label="Paste text content for the flipbook"></textarea>
-                        <button id="create-from-text-btn" class="submit-btn" disabled aria-label="Create flipbook from pasted text">
-                            Create Flipbook
-                        </button>
                     </div>
                 </div>
+
+                <div class="header-divider"></div>
+
+                <div class="customization-area">
+                    <h2 class="section-title">Customize Your Flipbook</h2>
+                
+                    <div class="setting-group">
+                        <label id="theme-label">Theme</label>
+                        <div id="theme-selector" class="theme-selector" role="radiogroup" aria-labelledby="theme-label">
+                            <button class="theme-btn active" data-theme="default" role="radio" aria-checked="true">Default</button>
+                            <button class="theme-btn" data-theme="classic" role="radio" aria-checked="false">Classic</button>
+                            <button class="theme-btn" data-theme="modern" role="radio" aria-checked="false">Modern</button>
+                            <button class="theme-btn" data-theme="kids" role="radio" aria-checked="false">Kids</button>
+                        </div>
+                    </div>
+                
+                    <div class="setting-group">
+                        <details class="accordion">
+                            <summary>Cover Designer</summary>
+                            <div class="accordion-content">
+                                <label for="cover-title">Title</label>
+                                <input type="text" id="cover-title" placeholder="My Awesome Flipbook">
+                                <label for="cover-author">Author</label>
+                                <input type="text" id="cover-author" placeholder="John Doe">
+                                <label for="cover-image-input" class="file-input-label">Upload Cover Image</label>
+                                <input type="file" id="cover-image-input" accept="image/*">
+                                <p id="cover-image-name" class="file-name-display"></p>
+                            </div>
+                        </details>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label class="toggle-label" for="narration-toggle">
+                            <span>Audio Narration (AI)</span>
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="narration-toggle">
+                                <span class="slider"></span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <button id="generate-btn" class="submit-btn" disabled>
+                    Generate Flipbook
+                </button>
             </div>
         </aside>
 
@@ -108,8 +157,34 @@
                     <button id="next-page-btn" class="control-btn" aria-label="Next Page">
                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
                     </button>
+                    
+                    <div class="search-container">
+                        <input type="search" id="search-input" placeholder="Search..." aria-label="Search within flipbook">
+                        <button id="search-btn" class="control-btn" aria-label="Search">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                            </svg>
+                        </button>
+                        <div id="search-results" class="search-results hidden"></div>
+                    </div>
+
+                    <button id="fullscreen-btn" class="control-btn" aria-label="Enter Full Screen">
+                        <svg id="enter-fullscreen-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1v4m0 0h-4m4-4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 0h-4m4 4l-5-5" />
+                        </svg>
+                        <svg id="exit-fullscreen-icon" class="hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 14.472V20h5.528M20 9.528V4h-5.528M14.472 4H4v5.528M9.528 20H20v-5.528" />
+                        </svg>
+                    </button>
                 </div>
             </div>
+            <template id="narration-button-template">
+                <button class="narration-btn" aria-label="Play narration for this page">
+                    <svg class="play-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM9.5 16.5v-9l7 4.5-7 4.5z"/></svg>
+                    <svg class="loading-icon hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                    <svg class="stop-icon hidden" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+                </button>
+            </template>
         </main>
     </div>
     <script type="module" src="index.js"></script>
