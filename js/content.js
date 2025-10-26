@@ -1,4 +1,5 @@
 
+
 const readTextFile = (file) => {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -8,83 +9,65 @@ const readTextFile = (file) => {
     });
 };
 
-// --- PDF Worker Logic ---
-// By embedding the worker code in a string, we avoid needing a separate worker file.
-const pdfWorkerCode = `
-    // Import the PDF.js library within the worker's scope
-    importScripts('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js');
-    // Set the source for the PDF.js worker, which is also required.
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-
-    // Listen for messages from the main thread
-    self.onmessage = async (event) => {
-        const { file } = event.data;
-        try {
-            const typedarray = new Uint8Array(await file.arrayBuffer());
-            const pdf = await pdfjsLib.getDocument(typedarray).promise;
-            const pageImageUrls = [];
-
-            for (let i = 1; i <= pdf.numPages; i++) {
-                const page = await pdf.getPage(i);
-                // Use a reasonable scale to balance quality and performance
-                const viewport = page.getViewport({ scale: 1.8 });
-                // OffscreenCanvas is ideal for workers as it doesn't touch the DOM
-                const canvas = new OffscreenCanvas(viewport.width, viewport.height);
-                const context = canvas.getContext('2d');
-
-                await page.render({ canvasContext: context, viewport: viewport }).promise;
-                // Convert to a Blob for efficient transfer back to the main thread
-                const blob = await canvas.convertToBlob({ type: 'image/jpeg', quality: 0.92 });
-                pageImageUrls.push(blob);
-                
-                // Post progress updates back to the main thread
-                self.postMessage({ type: 'progress', percentage: (i / pdf.numPages) * 90 });
-            }
-            
-            // Post the final result
-            self.postMessage({ type: 'result', pages: pageImageUrls });
-        } catch (error) {
-            console.error('PDF processing error in worker:', error);
-            self.postMessage({ type: 'error', message: 'Could not parse PDF. It may be corrupted.' });
+// Main-thread PDF processing function
+const readPdfFileOnMainThread = async (file, onProgress) => {
+    try {
+        // Ensure pdfjsLib and its worker are configured. This is a safeguard;
+        // it should already be configured in index.html.
+        if (typeof pdfjsLib === 'undefined' || !pdfjsLib.GlobalWorkerOptions.workerSrc) {
+            console.warn('PDF.js worker not pre-configured. Setting it now.');
+            pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js`;
         }
-    };
-`;
-
-const readPdfFileWithWorker = (file, onProgress) => {
-    return new Promise((resolve, reject) => {
-        // Create the worker from the string code using a Blob
-        const blob = new Blob([pdfWorkerCode], { type: 'application/javascript' });
-        const worker = new Worker(URL.createObjectURL(blob));
-
-        const pageImageBlobs = [];
-
-        worker.onmessage = (e) => {
-            const { type, percentage, pages, message } = e.data;
-            if (type === 'progress') {
-                onProgress(percentage);
-            } else if (type === 'result') {
-                // Convert received Blobs to Object URLs on the main thread
-                const pageImageUrls = pages.map(blob => URL.createObjectURL(blob));
-                resolve(pageImageUrls);
-                worker.terminate();
-            } else if (type === 'error') {
-                reject(new Error(message));
-                worker.terminate();
-            }
-        };
-
-        worker.onerror = (e) => {
-            reject(new Error(`Worker error: ${e.message}`));
-            worker.terminate();
-        };
         
-        // Start the worker by sending the file
-        worker.postMessage({ file });
-    });
+        const typedarray = new Uint8Array(await file.arrayBuffer());
+        const pdf = await pdfjsLib.getDocument(typedarray).promise;
+        const pageImageUrls = [];
+        
+        // Create a single, reusable canvas element (off-screen) to render pages
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+
+        for (let i = 1; i <= pdf.numPages; i++) {
+            const page = await pdf.getPage(i);
+            // Use a reasonable scale to balance quality and performance
+            const viewport = page.getViewport({ scale: 1.8 });
+            
+            canvas.width = viewport.width;
+            canvas.height = viewport.height;
+
+            await page.render({ canvasContext: context, viewport: viewport }).promise;
+            
+            // Convert canvas to a blob, which is more memory-efficient than a data URL
+            const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.92));
+            
+            // Create an object URL from the blob for the flipbook to use
+            pageImageUrls.push(URL.createObjectURL(blob));
+            
+            // Update the progress bar for a better user experience
+            onProgress((i / pdf.numPages) * 90);
+        }
+        
+        // Clean up the canvas element
+        canvas.remove();
+        
+        return pageImageUrls;
+
+    } catch (error) {
+        console.error('PDF processing error:', error);
+        // Throw a more informative error message
+        throw new Error(error.message || 'Could not parse PDF. It may be corrupted.');
+    }
 };
 
 export async function processFile(file, onProgress) {
-    if (file.type === 'application/pdf') return readPdfFileWithWorker(file, onProgress);
-    if (file.type === 'text/plain' || file.type === 'text/markdown') return readTextFile(file);
+    if (file.type === 'application/pdf') {
+        // We're moving PDF processing to the main thread to fix a potential
+        // issue with nested workers. This might cause the UI to be less responsive
+        // for very large PDFs, but ensures reliability.
+        return readPdfFileOnMainThread(file, onProgress);
+    }
+    if (file.type === 'text/plain' || file.type === 'text/markdown') {
+        return readTextFile(file);
+    }
     throw new Error('Unsupported file type. Please upload a PDF, TXT, or MD file.');
-};
+}
