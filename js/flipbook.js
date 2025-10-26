@@ -1,5 +1,6 @@
 
 import { dom } from './dom.js';
+import { state } from './state.js';
 import { showError, showFlipbook } from './ui.js';
 import { generateAndPlayAudio, stopAllAudio } from './tts.js';
 
@@ -139,24 +140,23 @@ function createCoverPage(options) {
     return `<div class="cover-page">${imageHtml}${titleHtml}${authorHtml}</div>`;
 }
 
-export function createFlipbook(pages, options) {
+export function createFlipbook() {
     if (pageFlipInstance) {
         pageFlipInstance.destroy();
         pageFlipInstance = null;
     }
     stopAllAudio();
 
+    const { pages, options, isImageBook } = state.flipbookContent;
+
     dom.flipbookEl.innerHTML = '';
     dom.flipbookWrapper.className = 'hidden'; // Reset classes
     dom.flipbookWrapper.classList.add(`theme-${options.theme}`);
-
 
     if (pages.length === 0) {
         showError("Could not generate any pages from the provided content.");
         return;
     }
-
-    const isImageBook = pages.length > 0 && pages[0].startsWith('blob:'); // PDFs are now blob URLs
     
     // Add cover if designed
     const finalPages = [...pages];
@@ -208,7 +208,7 @@ export function createFlipbook(pages, options) {
         width: 400, height: 550, size: 'stretch',
         minWidth: 315, maxWidth: 1000, minHeight: 420,
         maxHeight: 1350, maxShadowOpacity: 0.5,
-        showCover: true, mobileScrollSupport: true,
+        showCover: !!coverHtml, mobileScrollSupport: true,
     });
 
     pageFlipInstance.loadFromHTML(document.querySelectorAll('.page'));

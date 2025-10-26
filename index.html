@@ -14,6 +14,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <!-- Marked.js Library for Markdown parsing -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- DOMPurify for sanitizing HTML -->
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.11/dist/purify.min.js"></script>
     <script>
       // Set worker source for PDF.js
       if (typeof pdfjsLib !== 'undefined') {
@@ -30,7 +32,7 @@
 </script>
 </head>
 <body>
-    <div class="version-indicator">V 2.1.0</div>
+    <div class="version-indicator">V 2.4.0</div>
     <div id="app-container" class="app-container">
         <!-- Input Panel -->
         <aside class="input-panel">
@@ -177,6 +179,11 @@
                         </svg>
                         <svg id="exit-fullscreen-icon" class="hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M4 14.472V20h5.528M20 9.528V4h-5.528M14.472 4H4v5.528M9.528 20H20v-5.528" />
+                        </svg>
+                    </button>
+                    <button id="download-btn" class="control-btn" aria-label="Download Flipbook">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
                         </svg>
                     </button>
                 </div>

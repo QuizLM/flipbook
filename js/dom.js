@@ -38,6 +38,7 @@ export const dom = {
     fullscreenBtn: document.getElementById('fullscreen-btn'),
     enterFullscreenIcon: document.getElementById('enter-fullscreen-icon'),
     exitFullscreenIcon: document.getElementById('exit-fullscreen-icon'),
+    downloadBtn: document.getElementById('download-btn'),
     
     // Search
     searchContainer: document.querySelector('.search-container'),

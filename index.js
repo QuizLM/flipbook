@@ -1,18 +1,30 @@
 
 import { dom } from './js/dom.js';
-import { showLoader, showError, showFlipbook, updateLoaderProgress, resetView, switchTab } from './js/ui.js';
+import { state } from './js/state.js';
+import { 
+    showLoader, 
+    showError, 
+    updateLoaderProgress, 
+    resetView, 
+    switchTab,
+    addSparkleEffect,
+    updateGenerateButtonState,
+    handleTabKeydown,
+    toggleFullScreen,
+    handleFullScreenChange
+} from './js/ui.js';
 import { processFile } from './js/content.js';
-import { createFlipbook, flipPrevPage, flipNextPage, paginateHtmlContent, getFlipbookInstance, getSearchablePages, flipToPage } from './js/flipbook.js';
+import { createFlipbook, flipPrevPage, flipNextPage, paginateHtmlContent, getSearchablePages } from './js/flipbook.js';
 import { initTts } from './js/tts.js';
+import { performSearch } from './js/search.js';
+import { blobToBase64 } from './js/utils.js';
+import { downloadFlipbookAsHtml } from './js/download.js';
 
-// --- State Management ---
-let currentContentSource = { type: null, value: null }; // type: 'file' or 'text'
-let searchablePages = [];
 
 // --- Main App Logic ---
 
 async function handleGenerate() {
-    if (!currentContentSource.value) {
+    if (!state.currentContentSource.value) {
         showError("No content source selected. Please upload a file or paste text.");
         return;
     }
@@ -22,7 +34,7 @@ async function handleGenerate() {
     
     try {
         const coverImageInput = dom.coverImageInput.files?.[0];
-        const coverImageBase64 = coverImageInput ? await fileToBase64(coverImageInput) : null;
+        const coverImageBase64 = coverImageInput ? await blobToBase64(coverImageInput) : null;
 
         const theme = document.querySelector('.theme-btn.active')?.dataset.theme || 'default';
 
@@ -37,14 +49,14 @@ async function handleGenerate() {
         };
 
         let content;
-        if (currentContentSource.type === 'text') {
+        if (state.currentContentSource.type === 'text') {
             updateLoaderProgress(50);
-            content = await Promise.resolve(currentContentSource.value);
+            content = await Promise.resolve(state.currentContentSource.value);
             updateLoaderProgress(90);
 
         } else { // It's a file
             const onProgress = (percentage) => updateLoaderProgress(percentage);
-            content = await processFile(currentContentSource.value, onProgress);
+            content = await processFile(state.currentContentSource.value, onProgress);
         }
         
         updateLoaderProgress(95);
@@ -58,7 +70,9 @@ async function handleGenerate() {
         if (Array.isArray(content)) {
             pages = content;
         } else if (typeof content === 'string') {
-            const fullHtml = marked.parse(content, { breaks: true });
+            const dirtyHtml = marked.parse(content, { breaks: true });
+            // Sanitize HTML to prevent XSS
+            const fullHtml = DOMPurify.sanitize(dirtyHtml, { ADD_ATTR: ['target'] });
             
             // Wait for fonts to be loaded and ready to prevent text overflow issues
             await document.fonts.ready;
@@ -68,10 +82,14 @@ async function handleGenerate() {
             throw new Error('Unsupported content type for flipbook generation.');
         }
         
-        searchablePages = getSearchablePages(pages, Array.isArray(content));
+        // Store all generated content and options in the central state
+        state.flipbookContent.pages = pages;
+        state.flipbookContent.options = options;
+        state.flipbookContent.isImageBook = Array.isArray(content);
+        state.searchablePages = getSearchablePages(pages, Array.isArray(content));
         
         setTimeout(() => {
-            createFlipbook(pages, options);
+            createFlipbook(); // Now reads from state
             updateLoaderProgress(100);
         }, 100);
 
@@ -80,108 +98,21 @@ async function handleGenerate() {
     }
 }
 
-// --- Search Logic ---
-function performSearch() {
-    const query = dom.searchInput.value.trim().toLowerCase();
-    if (!query) {
-        dom.searchResults.classList.add('hidden');
-        return;
-    }
-    
-    const results = [];
-    searchablePages.forEach((pageText, index) => {
-        if (pageText.toLowerCase().includes(query)) {
-            results.push(index);
-        }
-    });
-    
-    displaySearchResults(results);
-}
-
-function displaySearchResults(results) {
-    dom.searchResults.innerHTML = '';
-    if (results.length === 0) {
-        dom.searchResults.innerHTML = '<p>No results found.</p>';
-    } else {
-        results.forEach(pageIndex => {
-            const item = document.createElement('div');
-            item.className = 'search-result-item';
-            item.textContent = `Page ${pageIndex + 1}`;
-            item.addEventListener('click', () => {
-                flipToPage(pageIndex);
-                dom.searchResults.classList.add('hidden');
-                dom.searchInput.value = '';
-            });
-            dom.searchResults.appendChild(item);
-        });
-    }
-    dom.searchResults.classList.remove('hidden');
-}
-
-
-// --- UI Effects ---
-
-function addSparkleEffect(button) {
-    button.addEventListener('mousemove', (e) => {
-        const rect = button.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        button.style.setProperty('--x', `${x}px`);
-        button.style.setProperty('--y', `${y}px`);
-    });
-}
-
-// --- Helpers ---
-function fileToBase64(file) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = error => reject(error);
-    });
-}
-
-function updateGenerateButtonState() {
-    dom.generateBtn.disabled = !currentContentSource.value;
-}
-
-// --- Keyboard Navigation ---
-
-function handleTabKeydown(e) {
-    const tabs = [dom.fileTabBtn, dom.textTabBtn];
-    const activeIndex = tabs.findIndex(tab => tab === document.activeElement);
-    if (activeIndex === -1) return;
-    let newIndex = -1;
-    if (e.key === 'ArrowRight') newIndex = (activeIndex + 1) % tabs.length;
-    else if (e.key === 'ArrowLeft') newIndex = (activeIndex - 1 + tabs.length) % tabs.length;
-    if (newIndex !== -1) {
-        e.preventDefault();
-        const newTab = tabs[newIndex];
-        switchTab(newTab.dataset.mode);
-        newTab.focus();
+async function handleDownload() {
+    const originalIconHTML = dom.downloadBtn.innerHTML;
+    dom.downloadBtn.innerHTML = `<svg class="loading-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>`;
+    dom.downloadBtn.disabled = true;
+    try {
+        await downloadFlipbookAsHtml();
+    } catch (err) {
+        console.error("Download failed:", err);
+        alert(`Could not generate the download file. ${err.message}`);
+    } finally {
+        dom.downloadBtn.innerHTML = originalIconHTML;
+        dom.downloadBtn.disabled = false;
     }
 }
 
-// --- Full Screen Mode ---
-
-function toggleFullScreen() {
-    if (!document.fullscreenElement) {
-        dom.appContainer.requestFullscreen().catch(err => {
-            alert(`Full-screen mode could not be activated: ${err.message}`);
-        });
-    } else {
-        document.exitFullscreen();
-    }
-}
-
-function handleFullScreenChange() {
-    const isFullScreen = !!document.fullscreenElement;
-    document.body.classList.toggle('fullscreen-active', isFullScreen);
-    dom.enterFullscreenIcon.classList.toggle('hidden', isFullScreen);
-    dom.exitFullscreenIcon.classList.toggle('hidden', !isFullScreen);
-    dom.fullscreenBtn.setAttribute('aria-label', isFullScreen ? 'Exit Full Screen' : 'Enter Full Screen');
-    setTimeout(() => getFlipbookInstance()?.update(), 150);
-}
 
 // --- Event Listeners Setup ---
 
@@ -197,7 +128,7 @@ function initEventListeners() {
         const file = target.files?.[0];
         if (!file) return;
         dom.fileNameDisplay.textContent = `Selected: ${file.name}`;
-        currentContentSource = { type: 'file', value: file };
+        state.currentContentSource = { type: 'file', value: file };
         updateGenerateButtonState();
         target.value = ''; // Reset for same-file upload
     });
@@ -212,14 +143,14 @@ function initEventListeners() {
         const file = e.dataTransfer?.files?.[0];
         if (!file) return;
         dom.fileNameDisplay.textContent = `Selected: ${file.name}`;
-        currentContentSource = { type: 'file', value: file };
+        state.currentContentSource = { type: 'file', value: file };
         updateGenerateButtonState();
     });
 
     // Text input
     dom.textInput.addEventListener('input', () => {
         const text = dom.textInput.value.trim();
-        currentContentSource = text ? { type: 'text', value: dom.textInput.value } : { type: null, value: null };
+        state.currentContentSource = text ? { type: 'text', value: dom.textInput.value } : { type: null, value: null };
         updateGenerateButtonState();
     });
     
@@ -234,7 +165,19 @@ function initEventListeners() {
 
     dom.coverImageInput.addEventListener('change', () => {
         const file = dom.coverImageInput.files?.[0];
-        dom.coverImageName.textContent = file ? file.name : '';
+        if (file) {
+            dom.coverImageName.textContent = file.name;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                dom.coverImagePreview.src = e.target.result;
+                dom.coverImagePreviewContainer.classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+        } else {
+            dom.coverImageName.textContent = 'No file selected';
+            dom.coverImagePreview.src = '#';
+            dom.coverImagePreviewContainer.classList.add('hidden');
+        }
     });
 
     // Generate Button
@@ -245,10 +188,11 @@ function initEventListeners() {
     dom.nextPageBtn.addEventListener('click', flipNextPage);
     dom.createNewBtn.addEventListener('click', () => {
         resetView();
-        currentContentSource = { type: null, value: null };
+        state.currentContentSource = { type: null, value: null };
         updateGenerateButtonState();
     });
     dom.fullscreenBtn.addEventListener('click', toggleFullScreen);
+    dom.downloadBtn.addEventListener('click', handleDownload);
     
     // Search
     dom.searchBtn.addEventListener('click', performSearch);
