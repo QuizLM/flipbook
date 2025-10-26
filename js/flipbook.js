@@ -1,4 +1,5 @@
 
+
 import { dom } from './dom.js';
 import { state } from './state.js';
 import { showError, showFlipbook } from './ui.js';
@@ -204,6 +205,10 @@ export function createFlipbook() {
         dom.flipbookEl.appendChild(pageElement);
     });
 
+    // --- RENDER FIX ---
+    // Make the container visible FIRST, so the library can calculate dimensions correctly.
+    showFlipbook();
+
     pageFlipInstance = new PageFlip(dom.flipbookEl, {
         width: 400, height: 550, size: 'stretch',
         minWidth: 315, maxWidth: 1000, minHeight: 420,
@@ -218,9 +223,12 @@ export function createFlipbook() {
         stopAllAudio(); // Stop audio when flipping pages
     });
     
-    updateControls(pageFlipInstance.getCurrentPageIndex(), pageFlipInstance.getPageCount());
-    showFlipbook();
-    dom.createNewBtn.focus();
+    // A short delay before updating ensures the library has fully initialized visually.
+    setTimeout(() => {
+        pageFlipInstance.update(); // Force a resize/re-render to be safe
+        updateControls(pageFlipInstance.getCurrentPageIndex(), pageFlipInstance.getPageCount());
+        dom.createNewBtn.focus();
+    }, 10);
 }
 
 export function flipPrevPage() {
