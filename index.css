@@ -292,7 +292,7 @@ input:checked + .slider:before { transform: translateX(20px); }
     overflow: hidden;
     position: relative;
     font-family: var(--page-font);
-    line-height: 1.6;
+    line-height: 1.7;
     text-align: left;
     hyphens: auto;
     overflow-wrap: break-word;

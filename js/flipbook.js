@@ -6,7 +6,7 @@ import { generateAndPlayAudio, stopAllAudio } from './tts.js';
 
 const PageFlip = window.St.PageFlip;
 let pageFlipInstance = null;
-const MAX_CONTENT_HEIGHT = 400; // More conservative to prevent overflow. Was 420.
+const MAX_CONTENT_HEIGHT = 390; // Further reduced to prevent overflow with complex scripts/long paragraphs.
 let searchablePageCache = [];
 
 export function getFlipbookInstance() {
