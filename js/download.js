@@ -21,13 +21,27 @@ function createCoverPageHtmlForDownload(options) {
 }
 
 /**
+ * Determines the correct base path for fetching resources, working both locally and on deployed subdirectories like GitHub Pages.
+ * @returns {string} The base path of the application.
+ */
+function getBasePath() {
+    const path = window.location.pathname;
+    // If path is "/<repo-name>/index.html", we want "/<repo-name>/"
+    // If path is "/<repo-name>/", we want "/<repo-name>/"
+    // If path is "/", we want "/"
+    const lastSlashIndex = path.lastIndexOf('/');
+    return path.substring(0, lastSlashIndex + 1);
+}
+
+
+/**
  * Fetches a resource from a URL and returns its text content.
  * @param {string} url - The URL of the resource to fetch.
  * @returns {Promise<string>} - A promise that resolves to the text content.
  */
 async function fetchResourceAsText(url) {
     const response = await fetch(url);
-    if (!response.ok) throw new Error(`Failed to fetch resource: ${url}`);
+    if (!response.ok) throw new Error(`Failed to fetch resource: ${url} (Status: ${response.status})`);
     return response.text();
 }
 
@@ -41,8 +55,12 @@ export async function downloadFlipbookAsHtml() {
         throw new Error("No flipbook content available to download.");
     }
     
-    // Fetch the HTML template. The new template is self-contained with CSS and JS.
-    const template = await fetchResourceAsText('./flipbook.html');
+    // --- FIX: Use the dynamic base path to build the correct template URL ---
+    const basePath = getBasePath();
+    const templateUrl = `${basePath}flipbook.html`;
+    
+    // Fetch the HTML template using the corrected, robust URL.
+    const template = await fetchResourceAsText(templateUrl);
 
     // 1. PREPARE PAGE CONTENTS ARRAY
     const finalPageContents = [];
