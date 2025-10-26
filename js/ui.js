@@ -1,4 +1,3 @@
-
 import { dom } from './dom.js';
 import { state } from './state.js';
 import { getFlipbookInstance } from './flipbook.js';
@@ -51,7 +50,8 @@ export function resetView() {
     dom.coverTitle.value = '';
     dom.coverAuthor.value = '';
     dom.coverImageInput.value = '';
-    dom.coverImageName.textContent = '';
+    dom.coverImageName.textContent = 'No file selected';
+    dom.coverImagePreviewContainer.classList.add('hidden');
     dom.narrationToggle.checked = false;
 
     dom.generateBtn.disabled = true;

@@ -1,19 +1,41 @@
 
-
 import { dom } from './dom.js';
 import { showError, showFlipbook } from './ui.js';
 import { generateAndPlayAudio, stopAllAudio } from './tts.js';
 
 const PageFlip = window.St.PageFlip;
 let pageFlipInstance = null;
-
-// The page flip instance has a height of 550px.
-// The .page-content CSS has significant vertical padding.
-// The available content height is determined empirically to be around 390px
-// to prevent text from overflowing the page boundaries, accounting for
-// line heights, margins, and potential rendering inconsistencies.
-const MAX_CONTENT_HEIGHT = 390; 
 let searchablePageCache = [];
+
+function getDynamicContentHeight() {
+    // Create a temporary page element to measure the available content height based on CSS.
+    // This makes the pagination robust against future CSS changes to padding or line-height.
+    const tempPage = document.createElement('div');
+    Object.assign(tempPage.style, {
+        position: 'absolute',
+        top: '-9999px',
+        left: '-9999px',
+        visibility: 'hidden',
+        width: '400px', // Match the PageFlip config width for accurate measurement
+        height: '550px', // Match the PageFlip config height
+    });
+    tempPage.className = 'page';
+
+    const tempContent = document.createElement('div');
+    tempContent.className = 'page-content';
+    tempPage.appendChild(tempContent);
+    document.body.appendChild(tempPage);
+    
+    // clientHeight is the inner height of an element, including padding.
+    // This gives us the precise available vertical space for content.
+    const height = tempContent.clientHeight;
+
+    document.body.removeChild(tempPage); // Clean up the temporary element
+    
+    // Return the calculated height with a small buffer for safety against minor rendering quirks.
+    return height - 5;
+}
+
 
 export function getFlipbookInstance() {
     return pageFlipInstance;
@@ -33,13 +55,12 @@ export function getSearchablePages(pages, isImageBook) {
 }
 
 export function paginateHtmlContent(fullHtml, theme = 'default') {
+    const MAX_CONTENT_HEIGHT = getDynamicContentHeight();
     const sourceContainer = document.createElement('div');
     sourceContainer.innerHTML = fullHtml;
     const nodes = Array.from(sourceContainer.childNodes);
 
-    // Create a temporary wrapper with the correct theme class for accurate measurement
     const wrapper = document.createElement('div');
-    // We add the theme class directly to the wrapper to simulate the final render environment
     wrapper.className = `theme-${theme}`;
     Object.assign(wrapper.style, {
         position: 'absolute',
@@ -49,9 +70,7 @@ export function paginateHtmlContent(fullHtml, theme = 'default') {
 
     const measurer = document.createElement('div');
     Object.assign(measurer.style, {
-        // Flipbook width is 400px, padding is 1.5rem (24px) left and right.
-        // Content width = 400 - (2 * 24) = 352px.
-        width: '352px',
+        width: '352px', /* Content width: 400px (book) - 2 * 24px (padding) */
         height: 'auto',
     });
     measurer.className = 'page-content prose';
@@ -61,7 +80,7 @@ export function paginateHtmlContent(fullHtml, theme = 'default') {
 
     const pages = [];
     if (nodes.length === 0) {
-        document.body.removeChild(wrapper); // Clean up
+        document.body.removeChild(wrapper);
         return [];
     }
 
@@ -69,26 +88,36 @@ export function paginateHtmlContent(fullHtml, theme = 'default') {
         const clonedNode = node.cloneNode(true);
         measurer.appendChild(clonedNode);
 
+        // Check if adding the new node exceeds the max height
         if (measurer.scrollHeight > MAX_CONTENT_HEIGHT) {
             measurer.removeChild(clonedNode);
+
+            // If there was content in the measurer before this node, push it as a completed page
             if (measurer.innerHTML.trim() !== '') {
                 pages.push(measurer.innerHTML);
             }
             measurer.innerHTML = '';
+
+            // Now, process the node that caused the overflow
             measurer.appendChild(clonedNode);
-            // Re-check in case a single element is too large for a page
+            
+            // If this single node is *still* too big, wrap it in a scrollable container and put it on its own page
             if (measurer.scrollHeight > MAX_CONTENT_HEIGHT) {
-                pages.push(measurer.innerHTML); // Add it anyway to not lose content
+                const oversizedWrapper = document.createElement('div');
+                oversizedWrapper.className = 'oversized-content';
+                oversizedWrapper.appendChild(clonedNode.cloneNode(true));
+                pages.push(oversizedWrapper.outerHTML);
                 measurer.innerHTML = '';
             }
         }
     }
 
+    // Add any remaining content in the measurer as the last page
     if (measurer.innerHTML.trim() !== '') {
         pages.push(measurer.innerHTML);
     }
 
-    document.body.removeChild(wrapper); // Clean up the wrapper and measurer
+    document.body.removeChild(wrapper); // Clean up the measurement elements
     return pages;
 }
 
@@ -127,7 +156,7 @@ export function createFlipbook(pages, options) {
         return;
     }
 
-    const isImageBook = pages.length > 0 && pages[0].startsWith('data:image/');
+    const isImageBook = pages.length > 0 && pages[0].startsWith('blob:'); // PDFs are now blob URLs
     
     // Add cover if designed
     const finalPages = [...pages];

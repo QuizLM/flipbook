@@ -17,6 +17,8 @@ export const dom = {
     coverAuthor: document.getElementById('cover-author'),
     coverImageInput: document.getElementById('cover-image-input'),
     coverImageName: document.getElementById('cover-image-name'),
+    coverImagePreviewContainer: document.getElementById('cover-image-preview-container'),
+    coverImagePreview: document.getElementById('cover-image-preview'),
     narrationToggle: document.getElementById('narration-toggle'),
     
     loader: document.getElementById('loader'),

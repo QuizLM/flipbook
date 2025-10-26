@@ -30,7 +30,7 @@
 </script>
 </head>
 <body>
-    <div class="version-indicator">V 2.0.1</div>
+    <div class="version-indicator">V 2.1.0</div>
     <div id="app-container" class="app-container">
         <!-- Input Panel -->
         <aside class="input-panel">
@@ -80,10 +80,10 @@
                     <div class="setting-group">
                         <label id="theme-label">Theme</label>
                         <div id="theme-selector" class="theme-selector" role="radiogroup" aria-labelledby="theme-label">
-                            <button class="theme-btn active" data-theme="default" role="radio" aria-checked="true">Default</button>
-                            <button class="theme-btn" data-theme="classic" role="radio" aria-checked="false">Classic</button>
-                            <button class="theme-btn" data-theme="modern" role="radio" aria-checked="false">Modern</button>
-                            <button class="theme-btn" data-theme="kids" role="radio" aria-checked="false">Kids</button>
+                            <button class="theme-btn active" data-theme="default" role="radio" aria-checked="true"><span class="theme-preview theme-preview-default"></span>Default</button>
+                            <button class="theme-btn" data-theme="classic" role="radio" aria-checked="false"><span class="theme-preview theme-preview-classic"></span>Classic</button>
+                            <button class="theme-btn" data-theme="modern" role="radio" aria-checked="false"><span class="theme-preview theme-preview-modern"></span>Modern</button>
+                            <button class="theme-btn" data-theme="kids" role="radio" aria-checked="false"><span class="theme-preview theme-preview-kids"></span>Kids</button>
                         </div>
                     </div>
                 
@@ -91,13 +91,16 @@
                         <details class="accordion">
                             <summary>Cover Designer</summary>
                             <div class="accordion-content">
+                                <div id="cover-image-preview-container" class="cover-image-preview-container hidden">
+                                    <img id="cover-image-preview" src="#" alt="Cover image preview">
+                                </div>
                                 <label for="cover-title">Title</label>
                                 <input type="text" id="cover-title" placeholder="My Awesome Flipbook">
                                 <label for="cover-author">Author</label>
                                 <input type="text" id="cover-author" placeholder="John Doe">
                                 <label for="cover-image-input" class="file-input-label">Upload Cover Image</label>
                                 <input type="file" id="cover-image-input" accept="image/*">
-                                <p id="cover-image-name" class="file-name-display"></p>
+                                <p id="cover-image-name" class="file-name-display">No file selected</p>
                             </div>
                         </details>
                     </div>

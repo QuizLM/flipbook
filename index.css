@@ -1,3 +1,4 @@
+
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap');
 
 :root {
@@ -211,16 +212,34 @@ body {
 
 .theme-selector {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); /* RESPONSIVE WRAP */
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); /* RESPONSIVE WRAP */
     gap: 0.5rem;
 }
 .theme-btn {
     padding: 0.5rem; border-radius: 0.375rem; font-size: 0.875rem; font-weight: 500;
     transition: all 0.2s ease-in-out; border: 1px solid var(--color-border);
     background-color: var(--color-bg); color: var(--color-text-secondary); cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 0.5rem;
 }
 .theme-btn:hover { background-color: var(--color-bg-secondary); }
 .theme-btn.active { background-color: var(--color-primary); color: white; border-color: var(--color-primary); box-shadow: var(--shadow); }
+
+.theme-preview {
+    width: 1rem; height: 1rem; border-radius: 50%; border: 2px solid var(--color-text-secondary);
+    display: inline-block; flex-shrink: 0; transition: border-color 0.2s;
+}
+.theme-btn.active .theme-preview { border-color: white; }
+.theme-preview-default { background-color: #fcfcfa; border-color: #333; }
+.theme-preview-classic { background-color: #fdfaf2; border-color: #5a4632; }
+.theme-preview-modern { background-color: #ffffff; border-color: #007bff; }
+.theme-preview-kids { background-color: #f0f9ff; border-color: #db2777; }
+
+@media (prefers-color-scheme: dark) {
+    .theme-preview-default { background-color: #2c2c2c; border-color: #e0e0e0; }
+    .theme-preview-classic { background-color: #28211a; border-color: #e0d9ce; }
+    .theme-preview-modern { background-color: #1a1a1a; border-color: #3399ff; }
+    .theme-preview-kids { background-color: #1e293b; border-color: #f9a8d4; }
+}
 
 .accordion summary { font-weight: 500; cursor: pointer; padding: 0.5rem; border-radius: 0.375rem; background-color: var(--color-bg); transition: background-color 0.2s; }
 .accordion summary:hover { background-color: var(--color-bg-secondary); }
@@ -230,6 +249,14 @@ body {
 .accordion-content input[type="file"] { display: none; }
 .file-input-label { display: inline-block; padding: 0.5rem 1rem; background-color: var(--color-bg-secondary); color: var(--color-text); border-radius: 0.375rem; cursor: pointer; transition: background-color 0.2s; }
 .file-input-label:hover { background-color: var(--color-border); }
+
+.cover-image-preview-container {
+    width: 100%; margin-bottom: 1rem; padding: 0.5rem;
+    border: 1px dashed var(--color-border); border-radius: 0.5rem;
+    display: flex; justify-content: center; align-items: center;
+    background-color: var(--color-bg);
+}
+#cover-image-preview { max-width: 100%; max-height: 150px; border-radius: 0.25rem; object-fit: contain; }
 
 .toggle-label { display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-weight: 500; }
 .toggle-switch { position: relative; display: inline-block; width: 44px; height: 24px; }
@@ -332,6 +359,33 @@ input:checked + .slider:before { transform: translateX(20px); }
 .prose strong { font-weight: bold; }
 .prose em { font-style: italic; }
 .prose blockquote { border-left: 4px solid var(--page-text-color); opacity: 0.7; padding-left: 1em; margin-left: 0; font-style: italic; }
+
+.oversized-content {
+    height: 100%;
+    overflow-y: auto;
+    padding-right: 8px; /* Prevent content from touching scrollbar */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+.oversized-content::-webkit-scrollbar {
+    width: 6px;
+}
+.oversized-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+.oversized-content::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+}
+@media (prefers-color-scheme: dark) {
+    .oversized-content {
+        scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+    }
+    .oversized-content::-webkit-scrollbar-thumb {
+        background-color: rgba(255, 255, 255, 0.2);
+    }
+}
+
 
 /* --- THEMES --- */
 /* Default Theme */
