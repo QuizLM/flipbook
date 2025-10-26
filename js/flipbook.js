@@ -6,12 +6,13 @@ import { generateAndPlayAudio, stopAllAudio } from './tts.js';
 
 const PageFlip = window.St.PageFlip;
 let pageFlipInstance = null;
+
 // The page flip instance has a height of 550px.
-// The .page-content CSS has top padding of 2.5rem (40px) and bottom padding of 3.5rem (56px).
-// Total vertical padding = 96px.
-// Available content height = 550 - 96 = 454px.
-// We use a slightly smaller value to account for browser rendering differences and margins.
-const MAX_CONTENT_HEIGHT = 450;
+// The .page-content CSS has significant vertical padding.
+// The available content height is determined empirically to be around 390px
+// to prevent text from overflowing the page boundaries, accounting for
+// line heights, margins, and potential rendering inconsistencies.
+const MAX_CONTENT_HEIGHT = 390; 
 let searchablePageCache = [];
 
 export function getFlipbookInstance() {
@@ -48,7 +49,6 @@ export function paginateHtmlContent(fullHtml, theme = 'default') {
 
     const measurer = document.createElement('div');
     Object.assign(measurer.style, {
-        // FIX: Correctly calculate the width based on the flipbook size and padding.
         // Flipbook width is 400px, padding is 1.5rem (24px) left and right.
         // Content width = 400 - (2 * 24) = 352px.
         width: '352px',

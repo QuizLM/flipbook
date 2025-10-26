@@ -449,7 +449,7 @@ input:checked + .slider:before { transform: translateX(20px); }
     transform: translateX(-50%);
     z-index: 20;
     background-color: rgba(31, 41, 55, 0.8);
-    padding: 0.5rem 0.75rem;
+    padding: 0.25rem 0.75rem; /* Reduced vertical padding */
     border-radius: 0.75rem;
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
@@ -471,8 +471,8 @@ input:checked + .slider:before { transform: translateX(20px); }
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 2.25rem;
-    height: 2.25rem;
+    width: 2rem; /* Reduced size */
+    height: 2rem; /* Reduced size */
     border: none;
     border-radius: 0.5rem;
     background-color: rgba(255, 255, 255, 0.5);
@@ -480,9 +480,13 @@ input:checked + .slider:before { transform: translateX(20px); }
     cursor: pointer;
     transition: all 0.2s;
 }
-.control-btn:hover { background-color: white; }
-.control-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.control-btn svg { width: 1.25rem; height: 1.25rem; color: var(--color-text); }
+.control-btn:hover { background-color: white; transform: scale(1.1); }
+.control-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.control-btn svg {
+    width: 1.125rem; /* Reduced icon size */
+    height: 1.125rem; /* Reduced icon size */
+    color: var(--color-text);
+}
 #page-counter { font-size: 0.875rem; font-weight: 500; color: var(--color-text); width: 6rem; text-align: center; }
 @media (prefers-color-scheme: dark) {
     .control-btn { background-color: rgba(55, 65, 81, 0.5); }
@@ -491,29 +495,10 @@ input:checked + .slider:before { transform: translateX(20px); }
     #page-counter { color: var(--color-text); }
 }
 
-#create-new-btn {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    background-color: var(--color-surface);
-    color: var(--color-text);
-    font-weight: 500;
-    padding: 0.5rem 1rem;
-    border: 1px solid var(--color-border);
-    border-radius: 0.5rem;
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
-    box-shadow: var(--shadow);
-    position: relative;
-    overflow: hidden;
-}
-#create-new-btn:hover { background-color: var(--color-bg-secondary); transform: scale(1.05); }
-#create-new-btn svg { width: 1.25rem; height: 1.25rem; }
-
 /* --- SPARKLE EFFECT --- */
-.submit-btn::before, #create-new-btn::before { content: ''; position: absolute; top: var(--y, 0); left: var(--x, 0); width: 250px; height: 250px; background: conic-gradient(from 0deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0)); opacity: 0; border-radius: 50%; transition: opacity 0.4s; transform-origin: center; animation: sparkle-spin 2s linear infinite paused; pointer-events: none; }
-.submit-btn:not(:disabled):hover::before, #create-new-btn:hover::before { opacity: 0.5; animation-play-state: running; }
-@media (prefers-color-scheme: dark) { .submit-btn::before, #create-new-btn::before { background: conic-gradient(from 0deg, rgba(255, 255, 255, 0), var(--color-primary-hover), rgba(255, 255, 255, 0)); } }
+.submit-btn::before { content: ''; position: absolute; top: var(--y, 0); left: var(--x, 0); width: 250px; height: 250px; background: conic-gradient(from 0deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0)); opacity: 0; border-radius: 50%; transition: opacity 0.4s; transform-origin: center; animation: sparkle-spin 2s linear infinite paused; pointer-events: none; }
+.submit-btn:not(:disabled):hover::before { opacity: 0.5; animation-play-state: running; }
+@media (prefers-color-scheme: dark) { .submit-btn::before { background: conic-gradient(from 0deg, rgba(255, 255, 255, 0), var(--color-primary-hover), rgba(255, 255, 255, 0)); } }
 
 /* --- Loader --- */
 .progress-bar-container { width: 100%; background-color: var(--color-bg); border-radius: 9999px; height: 0.75rem; margin-top: 1rem; overflow: hidden; }
@@ -529,14 +514,14 @@ input:checked + .slider:before { transform: translateX(20px); }
 #search-input {
     border: 1px solid var(--color-border);
     border-radius: 0.5rem;
-    padding: 0.4rem 2.5rem 0.4rem 0.8rem;
-    width: 130px;
+    padding: 0.25rem 2.25rem 0.25rem 0.75rem; /* Reduced vertical padding */
+    width: 120px;
     transition: width 0.3s;
     background-color: var(--color-surface);
     color: var(--color-text);
 }
-#search-input:focus { width: 150px; outline: none; border-color: var(--color-primary); }
-.search-container #search-btn { position: absolute; top: 50%; right: 0; transform: translateY(-50%); width: 2.5rem; height: 2.5rem; margin-left: 0; background: transparent; box-shadow: none; }
+#search-input:focus { width: 140px; outline: none; border-color: var(--color-primary); }
+.search-container #search-btn { position: absolute; top: 50%; right: 0; transform: translateY(-50%); width: 2.25rem; height: 2.25rem; margin-left: 0; background: transparent; box-shadow: none; }
 .search-container #search-btn:hover { background-color: transparent; }
 .search-container #search-btn svg { color: var(--color-text-secondary); transition: color 0.2s; }
 .search-container #search-btn:hover svg { color: var(--color-text); }
@@ -546,7 +531,7 @@ input:checked + .slider:before { transform: translateX(20px); }
 .search-result-item:hover { background-color: var(--color-bg-secondary); }
 
 /* --- FULL SCREEN STYLES --- */
-#fullscreen-btn svg { width: 1.5rem; height: 1.5rem; }
+#fullscreen-btn svg { width: 1.25rem; height: 1.25rem; }
 body.fullscreen-active #flipbook-wrapper {
     padding-bottom: 0; /* No extra padding needed */
 }
@@ -560,9 +545,15 @@ body.fullscreen-active #flipbook-controls {
     .input-panel { padding: 1.5rem; }
     .input-header h1 { font-size: 2rem; }
     .flipbook-container { padding: 0; }
-    #flipbook-controls { gap: 1rem; }
-    .control-btn { width: 2.5rem; height: 2.5rem; }
-    .control-btn svg { width: 1.5rem; height: 1.5rem; }
+    #flipbook-controls { gap: 0.75rem; }
+    .control-btn {
+        width: 2.25rem; /* Slightly larger on tablet */
+        height: 2.25rem;
+    }
+    .control-btn svg {
+        width: 1.25rem;
+        height: 1.25rem;
+    }
     .page-content {
         padding: 3.5rem 2rem 4.5rem;
         font-size: 16px;
@@ -579,7 +570,7 @@ body.fullscreen-active #flipbook-controls {
         bottom: 3.5rem;
     }
     .cover-title { font-size: 2rem; }
-    body.fullscreen-active #flipbook-controls { padding: 0.5rem 1rem; gap: 1rem; }
+    body.fullscreen-active #flipbook-controls { padding: 0.25rem 1rem; gap: 0.75rem; }
 }
 
 /* --- DESKTOP STYLES --- */

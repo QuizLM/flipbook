@@ -1,10 +1,26 @@
 
-
 import { dom } from './js/dom.js';
 import { state } from './js/state.js';
-import { showLoader, showError, updateLoaderProgress, resetView, switchTab, addSparkleEffect, updateGenerateButtonState, handleTabKeydown, toggleFullScreen, handleFullScreenChange } from './js/ui.js';
+import { 
+    showLoader, 
+    showError, 
+    updateLoaderProgress, 
+    resetView, 
+    switchTab, 
+    addSparkleEffect, 
+    updateGenerateButtonState, 
+    handleTabKeydown, 
+    toggleFullScreen, 
+    handleFullScreenChange 
+} from './js/ui.js';
 import { processFile } from './js/content.js';
-import { createFlipbook, flipPrevPage, flipNextPage, paginateHtmlContent, getSearchablePages } from './js/flipbook.js';
+import { 
+    createFlipbook, 
+    flipPrevPage, 
+    flipNextPage, 
+    paginateHtmlContent, 
+    getSearchablePages 
+} from './js/flipbook.js';
 import { initTts } from './js/tts.js';
 import { fileToBase64 } from './js/utils.js';
 import { performSearch } from './js/search.js';
@@ -163,7 +179,6 @@ function initEventListeners() {
 
     // Initialize UI Effects
     addSparkleEffect(dom.generateBtn);
-    addSparkleEffect(dom.createNewBtn);
 
     // Initialize Gemini-powered features
     initTts();
