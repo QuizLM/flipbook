@@ -6,7 +6,12 @@ import { generateAndPlayAudio, stopAllAudio } from './tts.js';
 
 const PageFlip = window.St.PageFlip;
 let pageFlipInstance = null;
-const MAX_CONTENT_HEIGHT = 390; // Further reduced to prevent overflow with complex scripts/long paragraphs.
+// The page flip instance has a height of 550px.
+// The .page-content CSS has top padding of 2.5rem (40px) and bottom padding of 3.5rem (56px).
+// Total vertical padding = 96px.
+// Available content height = 550 - 96 = 454px.
+// We use a slightly smaller value to account for browser rendering differences and margins.
+const MAX_CONTENT_HEIGHT = 450;
 let searchablePageCache = [];
 
 export function getFlipbookInstance() {
