@@ -187,28 +187,27 @@ export async function downloadFlipbookAsHtml() {
 
     const pageContentsArrayString = `const chaptersData = [${finalPageContents.map(html => JSON.stringify(html)).join(',\n')}];`;
     
-    // 2. PREPARE FLIPBOOK CONFIGURATION
-    const baseConfig = {
+    // 2. DETECT DEVICE TYPE AND PREPARE STATIC FLIPBOOK CONFIGURATION
+    const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || navigator.maxTouchPoints > 0;
+    
+    const config = {
         width: 400, height: 550, size: 'stretch',
         minWidth: 315, maxWidth: 1000, minHeight: 420,
         maxHeight: 1350, maxShadowOpacity: 0.5,
         showCover: !!coverHtml, 
         mobileScrollSupport: true,
+        clickToFlip: !isMobile, // Configuration is now static based on download device
     };
 
-    const dynamicConfigScript = `
-        const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || navigator.maxTouchPoints > 0;
-        
-        const config = ${JSON.stringify(baseConfig, null, 2)};
-        config.clickToFlip = !isMobile; // Enable click-to-flip ONLY on non-mobile devices
-
+    const staticConfigScript = `
+        const config = ${JSON.stringify(config, null, 2)};
         pageFlip = new St.PageFlip(bookElement, config);
     `;
 
     // 3. INJECT DYNAMIC CONTENT INTO THE TEMPLATE
     const finalHtml = FLIPBOOK_TEMPLATE_HTML
         .replace(/<title>.*?<\/title>/, `<title>${options.cover.title || 'My Flipbook'}</title>`)
-        .replace('//__PLACEHOLDER_PAGES_AND_CONFIG__', `${pageContentsArrayString}\n${dynamicConfigScript}`);
+        .replace('//__PLACEHOLDER_PAGES_AND_CONFIG__', `${pageContentsArrayString}\n${staticConfigScript}`);
 
     // 4. TRIGGER THE DOWNLOAD
     const blob = new Blob([finalHtml], { type: 'text/html' });
